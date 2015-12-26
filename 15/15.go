@@ -10,6 +10,10 @@ import (
 	"regexp"
 )
 
+var (
+	MIN = 1
+)
+
 func exitOnError( error error ) {
 	if error != nil {
 		fmt.Println( error )
@@ -31,12 +35,26 @@ func buildList( integers ...int ) *list.List {
 	return newList
 }
 
-func listNth( list *list.List, nth int ) int {
+func listNth( list *list.List, nth int ) *list.Element {
 	element := list.Front()
 	for i := 0; i < nth; i++ {
 		element = element.Next()
 	}
-	return element.Value.(int)
+	return element
+}
+
+func copyList( listToCopy *list.List ) *list.List {
+	listCopy := list.New()
+	for element := listToCopy.Front(); element != nil; element = element.Next() {
+		listCopy.PushBack( element.Value )
+	}
+	return listCopy
+}
+
+func printList( listToPrint *list.List ) {
+	for element := listToPrint.Front(); element != nil; element = element.Next() {
+		fmt.Println( element.Value )
+	}
 }
 
 func convert2DListTo2DArray( twoDimensionalList *list.List ) [][]int {
@@ -79,36 +97,42 @@ func buildIngredients() *list.List {
 	return ingredients
 }
 
-func addPermutation( permutations *list.List, previousPermutation *list.List, index int, carry int ) {
-	permutation := list.New()
-	for previousPermutationIndex := 0; previousPermutationIndex < index; previousPermutationIndex++ {
-		permutation.PushBack( listNth( permutations, previousPermutationIndex ) )
-	}
-	
-	permutation.PushBack(  )
-	
-	if index < permutations.Front().Len() {
-		addPermutation( permutations, index + 1, carry )
-	}
-}
-
 func buildPermutations( numberOfPossibilities int, numberOfAttributes int, ingredients [][]int ) *list.List {
 	permutations := list.New()
-	
 	firstPermutation := list.New()
 	for _, _ = range ingredients {
-		firstPermutation.PushBack( 1 )
+		firstPermutation.PushBack( MIN )
 	}
-	
 	firstPermutation.Front().Value = numberOfPossibilities - ( numberOfAttributes - 1 )
-	
 	permutations.PushBack( firstPermutation )
-	addPermutation( permutations, firstPermutation, 0, 0 )
+	
+	carry := 0
+	for {
+		permutation := copyList( permutations.Back().Value.(*list.List) )
+		lastElement := listNth( permutation, len( ingredients ) - 1 )
+		fmt.Println( lastElement )
+		lastElementValue := lastElement.Value.(int)
+		if lastElementValue > MIN {
+			carry += lastElementValue
+			lastElement.Value = MIN
+		}
+		for i := len( ingredients ) - 1; i >= 0; i-- {
+			currentElement := listNth( permutation, i )
+			if currentElement.Value.(int) > MIN {
+				carry += currentElement.Value.(int)
+				currentElement.Value = currentElement.Value.(int) - 1
+				currentElement.Next().Value = currentElement.Next().Value.(int) + carry
+				carry = 0
+			}
+		}
+		if permutation.Front().Value == MIN { break }
+		permutations.PushBack( permutation )
+	}
 	
 	return permutations
 }
 
-func checkForOptimalIngredients( permutations []int, ingredients [][]int ) int {
+func findOptimalIngredientTotal( permutations []int, ingredients [][]int ) int {
 	optimalPermutationValue := 0
 	
 	capacityIndex := 0
@@ -143,16 +167,13 @@ func checkForOptimalIngredients( permutations []int, ingredients [][]int ) int {
 	return optimalPermutationValue
 }
 
-func permuteCookies( permutations [][]int, ingredients [][]int ) {
-	
-}
-
 func main() {
 	ingredientsList := buildIngredients()
 	ingredients := convert2DListTo2DArray( ingredientsList )
-	permutationsList := buildPermutations( 7, len( ingredients ), ingredients )
+	permutationsList := buildPermutations( 6, 4, ingredients )
+	//permutationsList := buildPermutations( 7, len( ingredients ), ingredients )
 	permutations := convert2DListTo2DArray( permutationsList )
 	fmt.Println( permutations )
-	permuteCookies( permutations, ingredients )
+	//optimalPermutationValue := findOptimalIngredientTotal( permutations, ingredients )
 	//fmt.Println( optimalPermutationValue )
 }
