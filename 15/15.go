@@ -134,7 +134,7 @@ func buildPermutations( numberOfPossibilities int, numberOfAttributes int, ingre
 	return permutations
 }
 
-func findOptimalIngredientTotal( permutations []int, ingredients [][]int ) int {
+func findOptimalIngredientTotal( permutations [][]int, ingredients [][]int ) int {
 	optimalPermutationValue := 0
 	
 	capacityIndex := 0
@@ -142,27 +142,28 @@ func findOptimalIngredientTotal( permutations []int, ingredients [][]int ) int {
 	flavorIndex := 2
 	textureIndex := 3
 	
-	capacityTotal := 0
-	durabilityTotal := 0
-	flavorTotal := 0
-	textureTotal := 0
+	capacityTotal, durabilityTotal, flavorTotal, textureTotal := 0, 0, 0, 0
 	
-	for i, ingredient := range ingredients {
-		capacityTotal += permutations[ i ] * ingredient[ capacityIndex ]
-		durabilityTotal += permutations[ i ] * ingredient[ durabilityIndex ]
-		flavorTotal += permutations[ i ] * ingredient[ flavorIndex ]
-		textureTotal += permutations[ i ] * ingredient[ textureIndex ]
-	}
-	
-	if capacityTotal < 0 { capacityTotal = 0 }
-	if durabilityTotal < 0 { durabilityTotal = 0 }
-	if flavorTotal < 0 { flavorTotal = 0 }
-	if textureTotal < 0 { textureTotal = 0 }
-	
-	permutationProduct := capacityTotal * durabilityTotal * flavorTotal * textureTotal
-	
-	if permutationProduct > optimalPermutationValue {
-		optimalPermutationValue = permutationProduct
+	for _, permutation := range permutations {
+		for i, ingredient := range ingredients {
+			capacityTotal += permutation[ i ] * ingredient[ capacityIndex ]
+			durabilityTotal += permutation[ i ] * ingredient[ durabilityIndex ]
+			flavorTotal += permutation[ i ] * ingredient[ flavorIndex ]
+			textureTotal += permutation[ i ] * ingredient[ textureIndex ]
+		}
+		
+		if capacityTotal < 0 { capacityTotal = 0 }
+		if durabilityTotal < 0 { durabilityTotal = 0 }
+		if flavorTotal < 0 { flavorTotal = 0 }
+		if textureTotal < 0 { textureTotal = 0 }
+		
+		permutationProduct := capacityTotal * durabilityTotal * flavorTotal * textureTotal
+		
+		if permutationProduct > optimalPermutationValue {
+			optimalPermutationValue = permutationProduct
+		}
+		
+		capacityTotal, durabilityTotal, flavorTotal, textureTotal = 0, 0, 0, 0
 	}
 	
 	return optimalPermutationValue
@@ -173,7 +174,6 @@ func main() {
 	ingredients := convert2DListTo2DArray( ingredientsList )
 	permutationsList := buildPermutations( 100, len( ingredients ), ingredients )
 	permutations := convert2DListTo2DArray( permutationsList )
-	fmt.Println( permutations )
-	//optimalPermutationValue := findOptimalIngredientTotal( permutations, ingredients )
-	//fmt.Println( optimalPermutationValue )
+	optimalPermutationValue := findOptimalIngredientTotal( permutations, ingredients )
+	fmt.Println( optimalPermutationValue )
 }
