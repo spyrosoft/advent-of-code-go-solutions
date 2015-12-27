@@ -52,9 +52,11 @@ func copyList( listToCopy *list.List ) *list.List {
 }
 
 func printList( listToPrint *list.List ) {
+	fmt.Print( "( " )
 	for element := listToPrint.Front(); element != nil; element = element.Next() {
-		fmt.Println( element.Value )
+		fmt.Print( element.Value, " " )
 	}
+	fmt.Println( ")" )
 }
 
 func convert2DListTo2DArray( twoDimensionalList *list.List ) [][]int {
@@ -110,19 +112,19 @@ func buildPermutations( numberOfPossibilities int, numberOfAttributes int, ingre
 	for {
 		permutation := copyList( permutations.Back().Value.(*list.List) )
 		lastElement := listNth( permutation, len( ingredients ) - 1 )
-		fmt.Println( lastElement )
 		lastElementValue := lastElement.Value.(int)
 		if lastElementValue > MIN {
-			carry += lastElementValue
+			carry += lastElementValue - MIN
 			lastElement.Value = MIN
 		}
 		for i := len( ingredients ) - 1; i >= 0; i-- {
 			currentElement := listNth( permutation, i )
 			if currentElement.Value.(int) > MIN {
-				carry += currentElement.Value.(int)
+				carry += MIN
 				currentElement.Value = currentElement.Value.(int) - 1
 				currentElement.Next().Value = currentElement.Next().Value.(int) + carry
 				carry = 0
+				break
 			}
 		}
 		if permutation.Front().Value == MIN { break }
@@ -145,7 +147,6 @@ func findOptimalIngredientTotal( permutations []int, ingredients [][]int ) int {
 	flavorTotal := 0
 	textureTotal := 0
 	
-	fmt.Println( permutations )
 	for i, ingredient := range ingredients {
 		capacityTotal += permutations[ i ] * ingredient[ capacityIndex ]
 		durabilityTotal += permutations[ i ] * ingredient[ durabilityIndex ]
@@ -170,8 +171,7 @@ func findOptimalIngredientTotal( permutations []int, ingredients [][]int ) int {
 func main() {
 	ingredientsList := buildIngredients()
 	ingredients := convert2DListTo2DArray( ingredientsList )
-	permutationsList := buildPermutations( 6, 4, ingredients )
-	//permutationsList := buildPermutations( 7, len( ingredients ), ingredients )
+	permutationsList := buildPermutations( 100, len( ingredients ), ingredients )
 	permutations := convert2DListTo2DArray( permutationsList )
 	fmt.Println( permutations )
 	//optimalPermutationValue := findOptimalIngredientTotal( permutations, ingredients )
