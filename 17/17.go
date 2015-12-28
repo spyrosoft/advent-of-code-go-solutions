@@ -6,77 +6,114 @@ import (
 	"io/ioutil"
 	"strings"
 	"strconv"
-	"container/list"
+	"sort"
 )
 
 func main() {
-	MAX_TOTAL := 150
+	containers := populateContainers()
+	//MAX_VOLUME := 150
+	MAX_VOLUME := 30
+	fmt.Println( howManyCombinationsOfContainers( containers, MAX_VOLUME ) )
+}
+
+func populateContainers() []int {
 	stdin, error := ioutil.ReadAll( os.Stdin )
 	panicOnError( error )
-	containers := convertStringArrayToUint8Array( strings.Split( string( stdin ), "\n" ) )
-	i := 0
-	total := 0
-	combitanionsOfContainers := 0
-	stack := list.New()
-	limit := 100
+	containers := convertStringArrayToIntArray( strings.Split( string( stdin ), "\n" ) )
+	sort.Ints( containers )
+	reverseIntArray( containers )
+	return containers
+}
+
+func howManyCombinationsOfContainers( containers []int, MAX_VOLUME int ) int {
+	var i, totalCombos, currentTotal int
+	permutation := make( []bool, len( containers ) )
+	permutation[ i ] = true
+
+	//DELETE ME:
+	limit := 0
 	for {
-		total += int( containers[ i ] )
-		if total == MAX_TOTAL {
-			combitanionsOfContainers++
+		currentTotal = containersTotal( containers, permutation )
+		fmt.Println(currentTotal,permutation)
+		if currentTotal == MAX_VOLUME {
+			totalCombos++
 		}
-		if total >= MAX_TOTAL {
-			total -= int( containers[ i ] )
-			stack.Remove( stack.Back() )
+		if currentTotal >= MAX_VOLUME {
+			permutation[ i ] = false
 		}
-		stack.PushBack( i )
+		if i == len( containers ) - 1 {
+			i = clearContiguousIFromRight( permutation )
+			//Delete if not needed
+			//if i == -1 { break }
+		}
 		i++
-		fmt.Println("i",i)
-		if i == len( containers ) {
-			printList( stack )
-			if stack.Len() == 1 {
-				fmt.Println( "--", containers[ stack.Front().Value.(int) ] )
-				if stack.Front().Value.(int) + 1 >= len( containers ) { break }
-				stack.PushFront( stack.Front().Value.(int) + 1 )
-			}
-			stack.Remove( stack.Back() )
-			i = stack.Front().Value.(int)
-		}
+		permutation[ i ] = true
 		
+		//DELETE ME:
 		limit++
-		if limit > 1000 {
-			println( "Limit reached." )
+		if limit > 600 {
+			fmt.Println( "limit reached" )
 			break
 		}
 	}
-	fmt.Println( combitanionsOfContainers )
+	return totalCombos
 }
 
-
-
-func printList( listToPrint *list.List ) {
-	fmt.Print( "( " )
-	for element := listToPrint.Front(); element != nil; element = element.Next() {
-		fmt.Print( element.Value, " " )
+func clearContiguousIFromRight( permutation []bool ) int {
+	contiguous := true
+	i := len( permutation )
+	fmt.Println( "seek", permutation )
+	for {
+		i--
+		if i == -1 { break }
+		if permutation[ i ] == false {
+			contiguous = false
+		} else if !contiguous {
+			return i
+		} else {
+			permutation[ i ] = false
+		}
 	}
-	fmt.Println( ")" )
+	return i
 }
 
-func convertStringArrayToUint8Array( stringArray []string ) []uint8 {
-	uint8Array := make( []uint8, len( stringArray ) )
+func containersTotal( containers []int, permutation []bool ) int {
+	if len( containers ) != len( permutation ) {
+		panic( "Contiainers is not the same length as permutation." )
+	}
+	total := 0
+	for i, onOrOff := range permutation {
+		if onOrOff {
+			total += containers[ i ]
+		}
+	}
+	return total
+}
+
+
+
+
+func convertStringArrayToIntArray( stringArray []string ) []int {
+	intArray := make( []int, len( stringArray ) )
 	for i, string := range stringArray {
-		uint8Array[ i ] = stringToUint8( string )
+		intArray[ i ] = stringToInt( string )
 	}
-	return uint8Array
+	return intArray
 }
 
-func stringToUint8( string string ) uint8 {
+func reverseIntArray( arrayToReverse []int ) {
+	for i, _ := range arrayToReverse {
+		if i >= len( arrayToReverse ) / 2 { break }
+		tmp := arrayToReverse[ i ]
+		arrayToReverse[ i ] = arrayToReverse[ len( arrayToReverse ) - 1 - i ]
+		arrayToReverse[ len( arrayToReverse ) - 1 - i ] = tmp
+	}
+}
+
+func stringToInt( string string ) int {
 	integer, error := strconv.Atoi( string )
 	panicOnError( error )
-	uint8 := uint8( integer )
-	if int( uint8 ) != integer {
-		panic( "Call to stringToUint8 on a non uint8 string." )
-	}
-	return uint8
+	return integer
 }
 
 func panicOnError( error error ) { if error != nil { panic( error ) } }

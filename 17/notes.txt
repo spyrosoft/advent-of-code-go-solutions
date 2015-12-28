@@ -10,24 +10,108 @@
 
 
 
+== 30 - 20 15 5 5 5 ==
+
+>=? {
+	i off
+}
+i == containers length - 1? {
+	i-1 off
+	seek back from right {
+		no on? {
+			break
+		} non-contiguous on? {
+			new i
+		} contiguous on? {
+			off
+		}
+	}
+	i off
+}
+i++
+i on
+
+1 0 0 0 0 20 <
+|\
+1 1 0 0 0 35 >
+|  \
+1 0 1 0 0 25 <
+|   |\
+1 0 1 1 0 30 =
+|   |  \
+1 0 1 0 1 30 =
+|    \
+1 0 0 1 0 25 <
+|     |\
+1 0 0 1 1 30 =
+ \
+0 1 0 0 0 15 <
+  |\
+0 1 1 0 0 20 <
+  | |\
+0 1 1 1 0 25 <
+  | | |\
+0 1 1 1 1 30 =
+
+
+
+
 == 30 - 20 10 5(1) 5(2) 5(3) ==
 
-20 <
-20 10 =
-20 5(1) <
-20 5(1) 5(2) =
-20 5(1) 5(3) =
-20 5(2) 5(3) =
-10 5(1) <
-10 5(1) 5(2) <
-10 5(1) 5(2) 5(3) <
-5(1) <
-5(1) 5(2) <
-5(1) 5(2) 5(3) <
-5(2) <
-5(2) 5(3) <
-5(3) < (last item - break)
+i:0   stack( 20 )   total:20   <
+i:1   stack( 20 10 )   total:30   =   ( pop )
+i:2   stack( 20 5[1] ) total:25   <
+i:3   stack( 20 5[1] 5[2] )   30   =   ( pop )
+i:4   stack( 20 5[1] 5[3] )   30   =   ( pop - last item pop )
+i:3   stack( 20 5[2] )   25   <
+i:4   stack( 20 5[2] 5[3] )   30   =   ( pop - last item pop pop pop )
+i:1   stack( 10 )   10   <
+i:2   stack( 10 5[1] )   15   <
+i:3   stack( 10 5[1] 5[2] )   20   <
+i:4   stack( 10 5[1] 5[2] 5[3] )   25   <   ( last item pop pop pop pop )
+i:2   stack( 5[1] )   5   <
+i:3   stack( 5[1] 5[2] )   10   <
+i:4   stack( 5[1] 5[2] 5[3] )   15   <   ( last item pop pop pop )
+5[2] <
+5[2] 5[3] <
+5[3] < (last item - break)
 
 
 
 == 150 - 47 46 44 44 43 41 38 36 34 31 27 21 17 17 10 9 6 4 4 3 ==
+47 <
+47 46 : 93 <
+47 46 44 : 137 <
+
+
+
+
+	for {
+		total += int( containers[ i ] )
+		if total == MAX_TOTAL {
+			combitanionsOfContainers++
+		}
+		if total >= MAX_TOTAL {
+			total -= int( containers[ i ] )
+			stack.Remove( stack.Back() )
+		}
+		stack.PushBack( i )
+		i++
+		fmt.Println("i",i)
+		if i == len( containers ) {
+			printList( stack )
+			if stack.Len() == 1 {
+				fmt.Println( "--", containers[ stack.Front().Value.(int) ] )
+				if stack.Front().Value.(int) + 1 >= len( containers ) { break }
+				stack.PushFront( stack.Front().Value.(int) + 1 )
+			}
+			stack.Remove( stack.Back() )
+			i = stack.Front().Value.(int)
+		}
+		
+		limit++
+		if limit > 1000 {
+			println( "Limit reached." )
+			break
+		}
+	}
