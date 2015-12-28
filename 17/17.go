@@ -11,8 +11,8 @@ import (
 
 func main() {
 	containers := populateContainers()
-	//MAX_VOLUME := 150
-	MAX_VOLUME := 30
+	MAX_VOLUME := 150
+	//MAX_VOLUME := 30
 	fmt.Println( howManyCombinationsOfContainers( containers, MAX_VOLUME ) )
 }
 
@@ -30,51 +30,49 @@ func howManyCombinationsOfContainers( containers []int, MAX_VOLUME int ) int {
 	permutation := make( []bool, len( containers ) )
 	permutation[ i ] = true
 
-	//DELETE ME:
-	limit := 0
 	for {
 		currentTotal = containersTotal( containers, permutation )
-		fmt.Println(currentTotal,permutation)
 		if currentTotal == MAX_VOLUME {
 			totalCombos++
+		}
+		if i == len( containers ) - 1 {
+			clearContiguousIFromRight( permutation )
+			i = firstOnFromRight( permutation )
+			if i == -1 { break }
+			permutation[ i ] = false
 		}
 		if currentTotal >= MAX_VOLUME {
 			permutation[ i ] = false
 		}
-		if i == len( containers ) - 1 {
-			i = clearContiguousIFromRight( permutation )
-			//Delete if not needed
-			//if i == -1 { break }
-		}
 		i++
 		permutation[ i ] = true
-		
-		//DELETE ME:
-		limit++
-		if limit > 600 {
-			fmt.Println( "limit reached" )
-			break
-		}
 	}
 	return totalCombos
 }
 
-func clearContiguousIFromRight( permutation []bool ) int {
+func clearContiguousIFromRight( permutation []bool ) {
 	contiguous := true
 	i := len( permutation )
-	fmt.Println( "seek", permutation )
 	for {
 		i--
 		if i == -1 { break }
 		if permutation[ i ] == false {
 			contiguous = false
 		} else if !contiguous {
-			return i
+			break
 		} else {
 			permutation[ i ] = false
 		}
 	}
-	return i
+}
+
+func firstOnFromRight( permutation []bool ) int {
+	for i := len( permutation ) - 1; i >= 0; i-- {
+		if permutation[ i ] {
+			return i
+		}
+	}
+	return -1
 }
 
 func containersTotal( containers []int, permutation []bool ) int {
